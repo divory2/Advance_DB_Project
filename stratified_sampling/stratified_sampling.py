@@ -104,7 +104,7 @@ def getAproxSumAgregation(df,groupByCategory,val_col,fraction,get_aggregation_re
     start_time = time.perf_counter()
     stratatifiedSample = df.groupby(groupByCategory).sample(frac=fraction)
     aproximateSampleResults = stratatifiedSample[val_col].sum()
-    end_time = end_time = time.perf_counter()
+    end_time = end_time =time.perf_counter()
     
     sample_size = stratatifiedSample[val_col].count()
     confidence_interval =confidencInterval(stratatifiedSample[val_col],sample_size,confidencLevel)
