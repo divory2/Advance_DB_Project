@@ -94,6 +94,7 @@ def getMedianAggregation(df,column_Name):
     }
     return data
 def absoluteError(aproximateResults,exactResults):
+    print(f"*****here is absoult error {aproximateResults} - {exactResults}\n")
     return abs( aproximateResults - exactResults)
     
 
@@ -111,7 +112,7 @@ def percentageError(relativeError):
 
 def getAproxSumAggregation(df,column_name,max_iterations,get_aggregation_result):
     global column_series
-    confidencLevel= np.random.uniform(1, 98.0)
+    confidencLevel= np.random.uniform(.88, .99)
     columnList = []
     column =  df[column_name]
     n = len(column)
@@ -121,6 +122,7 @@ def getAproxSumAggregation(df,column_name,max_iterations,get_aggregation_result)
             indx = int(round(x))
             
             indx = max(0,min(indx, n -1))
+            
             return column.iloc[indx]
     learner = adaptive.Learner1D(f, bounds=(0, n-1))
     start_time = time.perf_counter()
@@ -138,8 +140,9 @@ def getAproxSumAggregation(df,column_name,max_iterations,get_aggregation_result)
        columnList.append(y_next)
        print(type(x_next), x_next)
        learner.tell(x_next,y_next)
-    column_series = pd.Series(column)
+    column_series = pd.Series(columnList)
     sumAgg =column_series.sum()
+    print(f"Here is sum Agg for aproximate agregation: *** \n {sumAgg}")
        
     end_time =  time.perf_counter()
     exectution_time  = end_time - start_time
@@ -168,7 +171,7 @@ def getAproxSumAggregation(df,column_name,max_iterations,get_aggregation_result)
 
 def getAproxAvgAggregation(df,column_name,max_iterations,get_aggregation_result):
     global column_series
-    confidencLevel= np.random.uniform(1, 98.0)
+    confidencLevel= np.random.uniform(.88, .99)
     columnList = []
     column =  df[column_name]
     n = len(column)
@@ -192,7 +195,7 @@ def getAproxAvgAggregation(df,column_name,max_iterations,get_aggregation_result)
        columnList.append(y_next)
        
        learner.tell(x_next,y_next)
-    column_series = pd.Series(column)
+    column_series = pd.Series(columnList)
     sumAgg =column_series.mean()
        
     end_time =  time.perf_counter()
@@ -222,7 +225,7 @@ def getAproxAvgAggregation(df,column_name,max_iterations,get_aggregation_result)
 
 def getAproxMedianAggregation(df,column_name,max_iterations,get_aggregation_result):
     global column_series
-    confidencLevel= np.random.uniform(1, 98.0)
+    confidencLevel= np.random.uniform(.88, .99)
     columnList = []
     column =  df[column_name]
     n = len(column)
@@ -247,7 +250,7 @@ def getAproxMedianAggregation(df,column_name,max_iterations,get_aggregation_resu
        columnList.append(y_next)
        
        learner.tell(x_next,y_next)
-    column_series = pd.Series(column)
+    column_series = pd.Series(columnList)
     sumAgg =column_series.median()
     
     end_time =  time.perf_counter()
@@ -348,9 +351,9 @@ def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_nam
         exact_time = safe(exact, "execution time") * 1000
         approx_time = safe(approx, "execution time") * 1000
 
-        approx_val = float(safe(approx, "approx result"))
-        exact_val = float(safe(exact, "result"))
-        moe = float(safe(approx, "margin of error"))
+        approx_val = safe(approx, "approx result")
+        exact_val = safe(exact, "result")
+        moe = safe(approx, "margin of error")
         lower = safe(approx, "lower bound")
         upper = safe(approx, "upper bound")
         sample_size = safe(approx, "sample size", 'N/A')
@@ -428,7 +431,7 @@ def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_nam
 
         # Sample size (FIXED)
         ax7 = fig2.add_subplot(gs2[0, 3])
-        ax7.bar([agg_label], [int(sample_size)], color='#8A2BE2')
+        ax7.bar([agg_label], [sample_size if sample_size != 'N/A' else 0], color='#8A2BE2')
         ax7.set_title("Sample Size (n)")
         ax7.set_ylabel("Count")
         ax7.text(0, sample_size if sample_size != 'N/A' else 0, f"{column_name}", ha='center', va='bottom', fontsize=9)
@@ -458,7 +461,7 @@ def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_nam
         plt.close(fig2)
 
         # =========================
-        # CONFIDENCE INTERVAL PLOT 
+        # 📊 CONFIDENCE INTERVAL PLOT (FIXED)
         # =========================
         fig3 = plt.figure(figsize=(10, 6))
         ax = fig3.add_subplot(111)
@@ -467,9 +470,9 @@ def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_nam
 
         # CI plot with error bars
         ax.errorbar(
-            [x],
-            [approx_val],
-            yerr=[moe],
+            x,
+            approx_val,
+            yerr=moe,
             fmt='o',
             capsize=8,
             label=f"Approx (CI: {lower:.2f}-{upper:.2f})",
@@ -492,7 +495,7 @@ def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_nam
         ax.set_ylabel("Value")
         ax.legend()
 
-     
+        # Add column name and sample size to the annotation
         ax.text(
             x,
             upper,
@@ -558,7 +561,9 @@ def main():
                     "exact avg": get_Avg_Aggregation,
                     "exact median": get_Median_Aggregation
                 }
-            plotAllMetrics(metrics, experiment_number=experiment_number, column_name=column_Name)     
+                print(f"Heree is the metrics variable *******\n {metrics}")
+                print(f"here is experiment number ***** {experiment_number}")
+                plotAllMetrics(metrics, experiment_number=experiment_number, column_name=column_Name)     
             break           
             
             
