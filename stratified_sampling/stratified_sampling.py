@@ -98,7 +98,7 @@ def confidencInterval(df, sample_size, confidenc_level):
 def getAproxSumAgregation(df,groupByCategory,val_col,fraction,get_aggregation_result):
     
    
-    confidencLevel= np.random.uniform(1, 98.0)
+    confidencLevel= np.random.uniform(.88, .99)
     
     
     start_time = time.perf_counter()
@@ -145,7 +145,7 @@ def getAproxMedianAgregation(df,groupByCategory,val_col,fraction,get_aggregation
     
     
     sample_size = stratatifiedSample[val_col].count()
-    confidencLevel= np.random.uniform(1, 98.0)
+    confidencLevel= np.random.uniform(.88, .99)
     confidence_interval =confidencInterval(stratatifiedSample[val_col],sample_size,confidencLevel)
     
     executionTime= end_time - start_time
@@ -175,7 +175,7 @@ def getAproxMedianAgregation(df,groupByCategory,val_col,fraction,get_aggregation
 def getAproxAvgAgregation(df,groupByCategory,val_col,fraction,get_aggregation_result):
     
     
-    confidencLevel= np.random.uniform(1, 98.0)
+    confidencLevel= np.random.uniform(.88, 0.99)
     
     
     start_time = time.perf_counter()
