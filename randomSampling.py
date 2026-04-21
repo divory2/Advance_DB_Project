@@ -42,13 +42,13 @@ convert the random number to fraction """
 
 def getAproxSumAggregation(df,column_Name, fraction,get_sum_Aggregation):
     random_sample = df[column_Name].sample(frac=fraction)
-    confidencLevel= np.random.uniform(1, 98.0)
+    confidencLevel= np.random.uniform(0.80, .99)
     sample_size = random_sample.count()
     confidence_interval =confidencInterval(random_sample,sample_size,confidencLevel)
     #starting timer
     start_time = time.perf_counter()
     
-    random_sample_results = random_sample.sum()
+    random_sample_results = random_sample.sum()/fraction
     end_time = time.perf_counter()
     
     
@@ -94,7 +94,7 @@ def getSumAggregation(df,column_Name):
 
 def getAproxAvgAggregation(df,column_Name, fraction,get_sum_Aggregation):
     random_sample = df[column_Name].sample(frac=fraction)
-    confidencLevel= np.random.uniform(1, 98.0)
+    confidencLevel= np.random.uniform(.88, .99)
     sample_size = random_sample.count()
     confidence_interval =confidencInterval(random_sample,sample_size,confidencLevel)
     #starting timer
@@ -145,7 +145,7 @@ def getAvgAggregation(df,column_Name):
     return data
 def getAproxMedianAggregation(df,column_Name, fraction,get_sum_Aggregation):
     random_sample = df[column_Name].sample(frac=fraction)
-    confidencLevel= np.random.uniform(1, 98.0)
+    confidencLevel= np.random.uniform(.88, .99)
     sample_size = random_sample.count()
     confidence_interval =confidencInterval(random_sample,sample_size,confidencLevel)
     #starting timer
@@ -525,7 +525,7 @@ def main():
                 
                 get_Median_Aggregation  =  getMedianAggregation(superStore, column_Name)
                 get_Median_Aprox_Aggregation = getAproxMedianAggregation(superStore,column_Name,fraction,get_Median_Aggregation)
-                
+                print("🔥 reached before metrics")
                 metrics = {
                     "exact sum": get_sum_Aggregation,
                     "aproximate sum": get_sum_Aprox_Aggregation,
@@ -535,6 +535,9 @@ def main():
                     "aproximate median": get_Median_Aprox_Aggregation,
                 }
                 
+                print(f"here is the metrics******** {metrics} ")
+                for items in metrics.values():
+                    print(f"here are metrics {items}")
                 plotAllMetrics(metrics, experiment_number=i, column_name=column_Name)     
                 break # Exit the while loop if plotting is successful
                 
@@ -543,233 +546,11 @@ def main():
             except Exception as e: # Catch other potential errors
                 print(f"An unexpected error occurred: {e}")
     
-    # =========================
-    # 1. ORGANIZE EXACT VS APPROX
-    # =========================
-    pairs = {}
-
-    for key, val in aggregation_results.items():
-        if val is None:
-            continue
-
-        key_lower = key.lower()
-
-        if key_lower.startswith("aproximate") or key_lower.startswith("approx"):
-            label = key_lower.replace("aproximate", "").replace("approx", "").strip()
-            side = "approx"
-        elif key_lower.startswith("exact"):
-            label = key_lower.replace("exact", "").strip()
-            side = "exact"
-        else:
-            continue
-
-        if label not in pairs:
-            pairs[label] = {}
-
-        pairs[label][side] = val
-
-    complete = {k: v for k, v in pairs.items() if "exact" in v and "approx" in v}
-
-    if not complete:
-        print(f"[Experiment {experiment_number}] No valid pairs found.")
-        return
-
-    # =========================
-    # 2. OUTPUT DIRS
-    # =========================
-    base_dir = os.path.join("plots", f"experiment_{experiment_number}")
-    perf_dir = os.path.join(base_dir, "performance")
-    acc_dir = os.path.join(base_dir, "accuracy")
-    ci_dir = os.path.join(base_dir, "confidence_interval")
-
-    os.makedirs(perf_dir, exist_ok=True)
-    os.makedirs(acc_dir, exist_ok=True)
-    os.makedirs(ci_dir, exist_ok=True)
-
-    # =========================
-    # 3. LOOP AGGREGATIONS
-    # =========================
-    for agg_label, sides in complete.items():
-
-        exact = sides["exact"]
-        approx = sides["approx"]
-
-        # SAFE GETTERS (prevents blank plots / crashes)
-        def safe(v, key, default=0):
-            return v.get(key, default)
-
-        exact_time = safe(exact, "execution time") * 1000
-        approx_time = safe(approx, "execution time") * 1000
-
-        approx_val = safe(approx, "approx result")
-        exact_val = safe(exact, "result")
-
-        moe = safe(approx, "margin of error")
-        lower = safe(approx, "lower bound")
-        upper = safe(approx, "upper bound")
-
-        sample_size = safe(approx, "sample size", "N/A")
-
-        speedup = exact_time / approx_time if approx_time else 0
-        time_saved = exact_time - approx_time
-
-        # =========================================================
-        # ⚡ PERFORMANCE PLOT
-        # =========================================================
-        fig = plt.figure(figsize=(14, 10))
-        fig.suptitle(f"{agg_label.upper()} | Column: {column_name} | EXP {experiment_number} | PERFORMANCE")
-
-        gs = gridspec.GridSpec(2, 2)
-
-        ax1 = fig.add_subplot(gs[0, :])
-        ax1.bar(["Exact", "Approx"], [exact_time, approx_time])
-        ax1.set_title("Execution Time (ms)")
-
-        ax1.text(
-            0.5,
-            max(exact_time, approx_time) * 1.05 if max(exact_time, approx_time) else 1,
-            f"n = {sample_size}",
-            ha='center'
-        )
-
-        ax2 = fig.add_subplot(gs[1, 0])
-        ax2.bar([agg_label], [speedup])
-        ax2.axhline(1, linestyle="--", color="gray")
-        ax2.set_title("Speedup Factor")
-
-        ax3 = fig.add_subplot(gs[1, 1])
-        ax3.bar([agg_label], [time_saved])
-        ax3.axhline(0, color="gray")
-        ax3.set_title("Time Saved (ms)")
-
-        plt.savefig(os.path.join(perf_dir, f"{agg_label}_performance.png"))
-        plt.close()
-
-        # =========================================================
-        # 🎯 ACCURACY PLOT
-        # =========================================================
-        fig2 = plt.figure(figsize=(16, 10))
-        fig2.suptitle(f"{agg_label.upper()} | Column: {column_name} | EXP {experiment_number} | ACCURACY")
-
-        gs2 = gridspec.GridSpec(2, 4)
-
-        ax4 = fig2.add_subplot(gs2[0, 0])
-        ax4.bar([agg_label], [safe(approx, "absolute error")])
-        ax4.set_title("Absolute Error")
-
-        ax5 = fig2.add_subplot(gs2[0, 1])
-        ax5.bar([agg_label], [safe(approx, "relative error")])
-        ax5.set_title("Relative Error")
-
-        ax6 = fig2.add_subplot(gs2[0, 2])
-        ax6.bar([agg_label], [safe(approx, "precentage error")])
-        ax6.set_title("Percentage Error")
-
-        ax7 = fig2.add_subplot(gs2[0, 3])
-        ax7.bar([agg_label], [sample_size])
-        ax7.set_title("Sample Size")
-
-        ax8 = fig2.add_subplot(gs2[1, 0])
-        ax8.bar(["Lower", "Upper"], [lower, upper])
-        ax8.set_title("Confidence Interval")
-
-        ax9 = fig2.add_subplot(gs2[1, 1])
-        ax9.bar([agg_label], [moe])
-        ax9.set_title("Margin of Error")
-
-        ax10 = fig2.add_subplot(gs2[1, 2])
-        ax10.bar([agg_label], [safe(approx, "standard error")])
-        ax10.set_title("Standard Error")
-
-        ax11 = fig2.add_subplot(gs2[1, 3])
-        ax11.bar([agg_label], [safe(approx, "z value")])
-        ax11.set_title("Z Value")
-
-        plt.savefig(os.path.join(acc_dir, f"{agg_label}_accuracy.png"))
-        plt.close()
-
-        # =========================================================
-        # 📊 CONFIDENCE INTERVAL PLOT
-        # =========================================================
-        fig3 = plt.figure(figsize=(10, 6))
-        ax = fig3.add_subplot(111)
-
-        x = 0
-
-        ax.errorbar(
-            x,
-            approx_val,
-            yerr=moe,
-            fmt='o',
-            capsize=8,
-            label="Approximation (CI)"
-        )
-
-        ax.axhline(exact_val, linestyle="--", linewidth=2, label="Exact Value")
-
-        ax.set_xticks([x])
-        ax.set_xticklabels([agg_label])
-
-        ax.set_title(f"{agg_label.upper()} | Column: {column_name} | EXP {experiment_number} | CI")
-        ax.set_ylabel("Value")
-        ax.legend()
-
-        ax.text(x, upper, f"Upper: {upper}\nn={sample_size}", ha='center', va='bottom')
-        ax.text(x, lower, f"Lower: {lower}", ha='center', va='top')
-
-        plt.savefig(os.path.join(ci_dir, f"{agg_label}_confidence_interval.png"))
-        plt.close()
-
-        print(f"[Experiment {experiment_number}] Saved plots for {agg_label}")
+    
         
-def make_title(agg_label, experiment_number, column_name, plot_type):
-    return f"{agg_label.upper()} | Column: {column_name} | Exp {experiment_number} | {plot_type}"
-
-def main():
-    for i in range(3):
-        
-        superStore =  pd.read_csv("./datasets/1/Superstore.csv", encoding='latin1')
 
 
-        print(superStore.head())
-        # while True:
-            
-        #     number = float(input("please input the percentage of samples you would likes to perform a random sample"))
 
-        #     if(number >60 or number < 1):
-        #         print("please input a valid number through 1 to 60")
-        #     else:
-        #         break
-        number = np.random.uniform(1,60.0)
-        fraction = randomSampleNumberGenerator(number)
-        while True:
-            try:
-                column_Name = input('\n please select the name of the column you want topreform a random sample on')
-
-                get_sum_Aggregation  =  getSumAggregation(superStore, column_Name)
-                get_sum_Aprox_Aggregation = getAproxSumAggregation(superStore,column_Name,fraction,get_sum_Aggregation)
-                
-                
-                get_Avg_Aggregation  =  getAvgAggregation(superStore, column_Name)
-                get_Avg_Aprox_Aggregation = getAproxAvgAggregation(superStore,column_Name,fraction,get_Avg_Aggregation)
-                
-                
-                get_Median_Aggregation  =  getMedianAggregation(superStore, column_Name)
-                get_Median_Aprox_Aggregation = getAproxMedianAggregation(superStore,column_Name,fraction,get_Median_Aggregation)
-                metrics = {
-                    "aproximate sum":   get_sum_Aprox_Aggregation,
-                    "exact sum":    get_sum_Aggregation,
-                    "aproximate avg": get_Avg_Aprox_Aggregation,
-                    "aproximate median": get_Median_Aprox_Aggregation,
-                    "exact avg": get_Avg_Aggregation,
-                    "exact median": get_Median_Aggregation
-                }
-                plotAllMetrics(metrics, experiment_number=i, column_name=column_Name)     
-                break           
-                
-                
-            except Error:
-                    print(f"invalid: {Error}")
                 
     
     
