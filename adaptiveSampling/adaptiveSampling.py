@@ -282,7 +282,7 @@ def make_title(agg_label, experiment_number, column_name, plot_type):
     return f"{agg_label.upper()} | Column: {column_name} | Exp {experiment_number} | {plot_type}"
 
 
-def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_name: str):
+def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_name: str, dataset_name: str): 
     
     # =========================
     # 1. ORGANIZE EXACT VS APPROX
@@ -327,7 +327,7 @@ def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_nam
     # =========================
     # 2. OUTPUT DIRS
     # =========================
-    base_dir = os.path.join("plots", f"experiment_{experiment_number}")
+    base_dir = os.path.join("plots", dataset_name, f"experiment_{experiment_number}")
     perf_dir = os.path.join(base_dir, "performance")
     acc_dir = os.path.join(base_dir, "accuracy")
     ci_dir = os.path.join(base_dir, "confidence_interval")
@@ -523,51 +523,92 @@ def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_nam
     
 def main():
     # for i in range(3):
+    pd.set_option('display.max_columns', None)   # show all columns
+    pd.set_option('display.max_rows', None)      # (optional) show all rows
+    pd.set_option('display.max_colwidth', None)
+    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurners")
+    if chosen_df =="superStore":
+        superStore =  pd.read_csv("../datasets/1/Superstore.csv", encoding='latin1')
+
+
+        print(superStore.head())
+            # while True:
+                
+            #     number = float(input("please input the percentage of samples you would likes to perform a random sample"))
+
+            #     if(number >60 or number < 1):
+            #         print("please input a valid number through 1 to 60")
+            #     else:
+            #         break
+            # number = np.random.uniform(1,60.0)
+            # fraction = randomSampleNumberGenerator(number)
         
-    superStore =  pd.read_csv("../datasets/1/Superstore.csv", encoding='latin1')
-
-
-    print(superStore.head())
-        # while True:
+        while True:
+            try:
+                column_Name = input('\n please select the name of the column you want to preform a random sample on')
+                max_iteration_list = [55,60,30]
+                for experiment_number, (iteration) in enumerate(max_iteration_list):
+                    get_sum_Aggregation  =  getSumAggregation(superStore, column_Name)
+                    get_sum_Aprox_Aggregation = getAproxSumAggregation(superStore,column_Name,iteration,get_sum_Aggregation)
+                    
+                    
+                    get_Avg_Aggregation  =  getAvgAggregation(superStore, column_Name)
+                    get_Avg_Aprox_Aggregation = getAproxAvgAggregation(superStore,column_Name,iteration,get_Avg_Aggregation)
+                    
+                    
+                    get_Median_Aggregation  =  getMedianAggregation(superStore, column_Name)
+                    get_Median_Aprox_Aggregation = getAproxMedianAggregation(superStore,column_Name,iteration,get_Median_Aggregation)
+                    metrics = {
+                        "aproximate sum":   get_sum_Aprox_Aggregation,
+                        "exact sum":    get_sum_Aggregation,
+                        "aproximate avg": get_Avg_Aprox_Aggregation,
+                        "aproximate median": get_Median_Aprox_Aggregation,
+                        "exact avg": get_Avg_Aggregation,
+                        "exact median": get_Median_Aggregation
+                    }
+                    print(f"Heree is the metrics variable *******\n {metrics}")
+                    print(f"here is experiment number ***** {experiment_number}")
+                    plotAllMetrics(metrics, experiment_number=experiment_number, column_name=column_Name,dataset_name="superStore")     
+                break           
+                
+                
+            except Error:
+                    print(f"invalid: {Error}")
+    elif chosen_df == "banckChurners":
+        banckChurners = pd.read_csv("../datasets/1/BankChurners 2.csv", encoding='latin1')
+        print(f"\n\n {banckChurners.head()}")
+        while True:
+            try:
+                column_Name = input('\n please select the name of the column you want to preform a random sample on')
+                max_iteration_list = [55,60,30]
+                for experiment_number, (iteration) in enumerate(max_iteration_list):
+                    get_sum_Aggregation  =  getSumAggregation(banckChurners, column_Name)
+                    get_sum_Aprox_Aggregation = getAproxSumAggregation(banckChurners,column_Name,iteration,get_sum_Aggregation)
+                    
+                    
+                    get_Avg_Aggregation  =  getAvgAggregation(banckChurners, column_Name)
+                    get_Avg_Aprox_Aggregation = getAproxAvgAggregation(banckChurners,column_Name,iteration,get_Avg_Aggregation)
+                    
+                    
+                    get_Median_Aggregation  =  getMedianAggregation(banckChurners, column_Name)
+                    get_Median_Aprox_Aggregation = getAproxMedianAggregation(banckChurners,column_Name,iteration,get_Median_Aggregation)
+                    metrics = {
+                        "aproximate sum":   get_sum_Aprox_Aggregation,
+                        "exact sum":    get_sum_Aggregation,
+                        "aproximate avg": get_Avg_Aprox_Aggregation,
+                        "aproximate median": get_Median_Aprox_Aggregation,
+                        "exact avg": get_Avg_Aggregation,
+                        "exact median": get_Median_Aggregation
+                    }
+                    print(f"Heree is the metrics variable *******\n {metrics}")
+                    print(f"here is experiment number ***** {experiment_number}")
+                    plotAllMetrics(metrics, experiment_number=experiment_number, column_name=column_Name,dataset_name="banckChurners")     
+                break           
+        
+        
+            except Error:
+                    print(f"invalid: {Error}")
             
-        #     number = float(input("please input the percentage of samples you would likes to perform a random sample"))
-
-        #     if(number >60 or number < 1):
-        #         print("please input a valid number through 1 to 60")
-        #     else:
-        #         break
-        # number = np.random.uniform(1,60.0)
-        # fraction = randomSampleNumberGenerator(number)
-    while True:
-        try:
-            column_Name = input('\n please select the name of the column you want topreform a random sample on')
-            max_iteration_list = [55,60,30]
-            for experiment_number, (iteration) in enumerate(max_iteration_list):
-                get_sum_Aggregation  =  getSumAggregation(superStore, column_Name)
-                get_sum_Aprox_Aggregation = getAproxSumAggregation(superStore,column_Name,iteration,get_sum_Aggregation)
-                
-                
-                get_Avg_Aggregation  =  getAvgAggregation(superStore, column_Name)
-                get_Avg_Aprox_Aggregation = getAproxAvgAggregation(superStore,column_Name,iteration,get_Avg_Aggregation)
-                
-                
-                get_Median_Aggregation  =  getMedianAggregation(superStore, column_Name)
-                get_Median_Aprox_Aggregation = getAproxMedianAggregation(superStore,column_Name,iteration,get_Median_Aggregation)
-                metrics = {
-                    "aproximate sum":   get_sum_Aprox_Aggregation,
-                    "exact sum":    get_sum_Aggregation,
-                    "aproximate avg": get_Avg_Aprox_Aggregation,
-                    "aproximate median": get_Median_Aprox_Aggregation,
-                    "exact avg": get_Avg_Aggregation,
-                    "exact median": get_Median_Aggregation
-                }
-                print(f"Heree is the metrics variable *******\n {metrics}")
-                print(f"here is experiment number ***** {experiment_number}")
-                plotAllMetrics(metrics, experiment_number=experiment_number, column_name=column_Name)     
-            break           
-            
-            
-        except Error:
-                print(f"invalid: {Error}")
+        
     
 main()
