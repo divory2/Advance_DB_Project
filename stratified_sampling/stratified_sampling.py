@@ -216,7 +216,8 @@ def getAproxAvgAgregation(df,groupByCategory,val_col,fraction,get_aggregation_re
     return metric_Evaluation
 
 
-def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_name: str):
+def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_name: str, dataset_name: str):    
+
     
     # =========================
     # 1. ORGANIZE EXACT VS APPROX
@@ -261,7 +262,7 @@ def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_nam
     # =========================
     # 2. OUTPUT DIRS
     # =========================
-    base_dir = os.path.join("plots", f"experiment_{experiment_number}")
+    base_dir = os.path.join("plots", dataset_name, f"experiment_{experiment_number}")
     perf_dir = os.path.join(base_dir, "performance")
     acc_dir = os.path.join(base_dir, "accuracy")
     ci_dir = os.path.join(base_dir, "confidence_interval")
@@ -483,44 +484,97 @@ def percentageError(relativeError):
 work flow
 """
 def main():
-    superStore = pd.read_csv("../datasets/1/Superstore.csv", encoding='latin1')
-    groupingList= {
-        "test": ["Quantity"],
-        "test2": ["Sales","Category"],
-        "test3":   ["Product Name","Sub-Category","Region"]
-    }
-    for experiment_number ,(group_name,itmes) in enumerate(groupingList.items()):
-        print(f"\nRunning experiment {experiment_number}: {group_name} -> {itmes}")
-
+    pd.set_option('display.max_columns', None)   # show all columns
+    pd.set_option('display.max_rows', None)      # (optional) show all rows
+    pd.set_option('display.max_colwidth', None)
+    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurners")
+    if chosen_df == "superStore":
         
-        while True:
-            try:
-                column_Name = input('\n please select the column name you want to perform statified sample on \n')
+        superStore = pd.read_csv("../datasets/1/Superstore.csv", encoding='latin1')
+        print(superStore.head())
+        groupingList= {
+            "test": ["Quantity"],
+            "test2": ["Sales","Category"],
+            "test3":   ["Product Name","Sub-Category","Region"]
+        }
+        experiment_results=[]
+        for experiment_number ,(group_name,itmes) in enumerate(groupingList.items()):
+            print(f"\nRunning experiment {experiment_number}: {group_name} -> {itmes}")
 
-                get_sum_Aggregation  =  getSumAggregation(superStore, column_Name)
-                get_sum_Aprox_Aggregation = getAproxAvgAgregation(superStore,itmes,column_Name,.40,get_sum_Aggregation)
-                
-                
-                get_Avg_Aggregation  =  getAvgAggregation(superStore, column_Name)
-                get_Avg_Aprox_Aggregation = getAproxAvgAgregation(superStore,itmes,column_Name,.40,get_Avg_Aggregation)
-                
-                
-                get_Median_Aggregation  =  getMedianAggregation(superStore, column_Name)
-                get_Median_Aprox_Aggregation = getAproxMedianAgregation(superStore,itmes,column_Name,.40,get_Median_Aggregation)
-                metrics = {
-                    "aproximate sum":   get_sum_Aprox_Aggregation,
-                    "exact sum":    get_sum_Aggregation,
-                    "aproximate avg": get_Avg_Aprox_Aggregation,
-                    "aproximate median": get_Median_Aprox_Aggregation,
-                    "exact avg": get_Avg_Aggregation,
-                    "exact median": get_Median_Aggregation
-                }
-                plotAllMetrics(metrics, experiment_number=experiment_number, column_name=column_Name)     
-                break           
-                
-                
-            except Error:
-                    print(f"invalid: {Error}")
+            
+            while True:
+                try:
+                    column_Name = input('\n please select the column name you want to perform statified sample on \n')
+
+                    get_sum_Aggregation  =  getSumAggregation(superStore, column_Name)
+                    get_sum_Aprox_Aggregation = getAproxAvgAgregation(superStore,itmes,column_Name,.40,get_sum_Aggregation)
+                    
+                    
+                    get_Avg_Aggregation  =  getAvgAggregation(superStore, column_Name)
+                    get_Avg_Aprox_Aggregation = getAproxAvgAgregation(superStore,itmes,column_Name,.40,get_Avg_Aggregation)
+                    
+                    
+                    get_Median_Aggregation  =  getMedianAggregation(superStore, column_Name)
+                    get_Median_Aprox_Aggregation = getAproxMedianAgregation(superStore,itmes,column_Name,.40,get_Median_Aggregation)
+                    metrics = {
+                        "aproximate sum":   get_sum_Aprox_Aggregation,
+                        "exact sum":    get_sum_Aggregation,
+                        "aproximate avg": get_Avg_Aprox_Aggregation,
+                        "aproximate median": get_Median_Aprox_Aggregation,
+                        "exact avg": get_Avg_Aggregation,
+                        "exact median": get_Median_Aggregation
+                    }
+                    experiment_results.append(metrics)
+                    plotAllMetrics(metrics, experiment_number=experiment_number, column_name=column_Name,dataset_name="superStore")     
+                    break           
+                    
+                    
+                except Error:
+                        print(f"invalid: {Error}")
+    elif chosen_df == "banckChurner":
+        banckChurners = pd.read_csv("../datasets/1/BankChurners 2.csv", encoding='latin1')
+        print(f"\n\n {banckChurners.head()}")
+        groupingList = {
+            "test1": ["Gender"],
+            
+            "test2": ["Income_Category", "Card_Category"],
+            
+            "test3": ["Attrition_Flag", "Education_Level", "Marital_Status"]
+        }
+        experiment_results=[]
+        for experiment_number ,(group_name,itmes) in enumerate(groupingList.items()):
+            print(f"\nRunning experiment {experiment_number}: {group_name} -> {itmes}")
+
+            
+            while True:
+                try:
+                    column_Name = input('\n please select the column name you want to perform statified sample on \n')
+
+                    get_sum_Aggregation  =  getSumAggregation(banckChurners, column_Name)
+                    get_sum_Aprox_Aggregation = getAproxAvgAgregation(banckChurners,itmes,column_Name,.40,get_sum_Aggregation)
+                    
+                    
+                    get_Avg_Aggregation  =  getAvgAggregation(banckChurners, column_Name)
+                    get_Avg_Aprox_Aggregation = getAproxAvgAgregation(banckChurners,itmes,column_Name,.40,get_Avg_Aggregation)
+                    
+                    
+                    get_Median_Aggregation  =  getMedianAggregation(banckChurners, column_Name)
+                    get_Median_Aprox_Aggregation = getAproxMedianAgregation(banckChurners,itmes,column_Name,.40,get_Median_Aggregation)
+                    metrics = {
+                        "aproximate sum":   get_sum_Aprox_Aggregation,
+                        "exact sum":    get_sum_Aggregation,
+                        "aproximate avg": get_Avg_Aprox_Aggregation,
+                        "aproximate median": get_Median_Aprox_Aggregation,
+                        "exact avg": get_Avg_Aggregation,
+                        "exact median": get_Median_Aggregation
+                    }
+                    experiment_results.append(metrics)
+                    plotAllMetrics(metrics, experiment_number=experiment_number, column_name=column_Name,dataset_name="banckChurner")     
+                    break           
+                    
+                    
+                except Error:
+                        print(f"invalid: {Error}")
     # print(superStore.head())
 
 main()
