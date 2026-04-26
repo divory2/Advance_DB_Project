@@ -504,14 +504,14 @@ def main():
     pd.set_option('display.max_colwidth', None)
     superStore =  pd.read_csv("./datasets/1/Superstore.csv", encoding='latin1')
     banckChurners = pd.read_csv("./datasets/1/BankChurners 2.csv", encoding='latin1')
-    
+    studentPerformance = pd.read_csv("./datasets/1/StudentsPerformance.csv", encoding='latin1')
     
     number = np.random.uniform(1,60.0)
     fraction = randomSampleNumberGenerator(number)
     
    
             
-    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurners")
+    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurners and students performance \n")
     if chosen_df == "superStore":
         for i in range(3):
             print(superStore.head())
@@ -592,6 +592,46 @@ def main():
                     print(f"❌ Invalid column name '{column_Name}'. Please try again.")
                 except Exception as e: # Catch other potential errors
                     print(f"An unexpected error occurred: {e}")
+    elif chosen_df == "student Performance":
+        print(f"\n\n {studentPerformance.head()}")
+        for i in range(3):
+            while True:
+                    try:
+                        column_Name = input('\n please select the name of the column you want to perform a random sample on: ')
+
+                        # --- Input validation for numeric columns ---
+                        if not np.issubdtype(studentPerformance[column_Name].dtype, np.number):
+                            print("❌ Please select a numeric column ")
+                            continue # Ask for input again
+
+                        get_sum_Aggregation  =  getSumAggregation(studentPerformance, column_Name)
+                        get_sum_Aprox_Aggregation = getAproxSumAggregation(studentPerformance,column_Name,fraction,get_sum_Aggregation)
+                        
+                        get_Avg_Aggregation  =  getAvgAggregation(studentPerformance, column_Name)
+                        get_Avg_Aprox_Aggregation = getAproxAvgAggregation(studentPerformance,column_Name,fraction,get_Avg_Aggregation)
+                        
+                        get_Median_Aggregation  =  getMedianAggregation(studentPerformance, column_Name)
+                        get_Median_Aprox_Aggregation = getAproxMedianAggregation(studentPerformance,column_Name,fraction,get_Median_Aggregation)
+                        print("🔥 reached before metrics")
+                        metrics = {
+                            "exact sum": get_sum_Aggregation,
+                            "aproximate sum": get_sum_Aprox_Aggregation,
+                            "exact avg": get_Avg_Aggregation,
+                            "aproximate avg": get_Avg_Aprox_Aggregation,
+                            "exact median": get_Median_Aggregation,
+                            "aproximate median": get_Median_Aprox_Aggregation,
+                        }
+                        
+                        print(f"here is the metrics******** {metrics} ")
+                        for items in metrics.values():
+                            print(f"here are metrics {items}")
+                        plotAllMetrics(metrics, experiment_number=i, column_name=column_Name,dataset_name="Students Performance")     
+                        break # Exit the while loop if plotting is successful
+                    except KeyError:
+                        print(f"❌ Invalid column name '{column_Name}'. Please try again.")
+                    except Exception as e: # Catch other potential errors
+                        print(f"An unexpected error occurred: {e}")
+            
         
                     
 

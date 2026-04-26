@@ -526,7 +526,8 @@ def main():
     pd.set_option('display.max_columns', None)   # show all columns
     pd.set_option('display.max_rows', None)      # (optional) show all rows
     pd.set_option('display.max_colwidth', None)
-    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurners")
+    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurners and students performance \n")
+    
     if chosen_df =="superStore":
         superStore =  pd.read_csv("../datasets/1/Superstore.csv", encoding='latin1')
 
@@ -608,7 +609,40 @@ def main():
         
             except Error:
                     print(f"invalid: {Error}")
+    elif chosen_df == "students performance":
+        studentPerformance = pd.read_csv("../datasets/1/StudentsPerformance.csv", encoding='latin1')
+        print(f"\n\n {studentPerformance}")
             
-        
+        while True:
+            try:
+                column_Name = input('\n please select the name of the column you want to preform a random sample on')
+                max_iteration_list = [55,60,30]
+                for experiment_number, (iteration) in enumerate(max_iteration_list):
+                    get_sum_Aggregation  =  getSumAggregation(studentPerformance, column_Name)
+                    get_sum_Aprox_Aggregation = getAproxSumAggregation(studentPerformance,column_Name,iteration,get_sum_Aggregation)
+                    
+                    
+                    get_Avg_Aggregation  =  getAvgAggregation(studentPerformance, column_Name)
+                    get_Avg_Aprox_Aggregation = getAproxAvgAggregation(studentPerformance,column_Name,iteration,get_Avg_Aggregation)
+                    
+                    
+                    get_Median_Aggregation  =  getMedianAggregation(studentPerformance, column_Name)
+                    get_Median_Aprox_Aggregation = getAproxMedianAggregation(studentPerformance,column_Name,iteration,get_Median_Aggregation)
+                    metrics = {
+                        "aproximate sum":   get_sum_Aprox_Aggregation,
+                        "exact sum":    get_sum_Aggregation,
+                        "aproximate avg": get_Avg_Aprox_Aggregation,
+                        "aproximate median": get_Median_Aprox_Aggregation,
+                        "exact avg": get_Avg_Aggregation,
+                        "exact median": get_Median_Aggregation
+                    }
+                    print(f"Heree is the metrics variable *******\n {metrics}")
+                    print(f"here is experiment number ***** {experiment_number}")
+                    plotAllMetrics(metrics, experiment_number=experiment_number, column_name=column_Name,dataset_name="yellowTrip")     
+                break           
+    
+    
+            except Error:
+                    print(f"invalid: {Error}")
     
 main()

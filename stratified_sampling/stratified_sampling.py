@@ -487,7 +487,7 @@ def main():
     pd.set_option('display.max_columns', None)   # show all columns
     pd.set_option('display.max_rows', None)      # (optional) show all rows
     pd.set_option('display.max_colwidth', None)
-    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurners")
+    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurners and student Performance \n")
     if chosen_df == "superStore":
         
         superStore = pd.read_csv("../datasets/1/Superstore.csv", encoding='latin1')
@@ -576,5 +576,49 @@ def main():
                 except Error:
                         print(f"invalid: {Error}")
     # print(superStore.head())
+    elif chosen_df == "student Performance":
+        studentPerformance = pd.read_csv("../datasets/1/StudentsPerformance.csv", encoding='latin1')
+        groupingList = {
+           "test1": ["test preparation course"],
+    
+            "test2": ["math score", "reading score"],
+            
+            "test3": ["gender","lunch", "test preparation course"]
+        }
+        experiment_results=[]
+        print(f"\n{studentPerformance.head()}\n")
+        for experiment_number ,(group_name,itmes) in enumerate(groupingList.items()):
+            print(f"\nRunning experiment {experiment_number}: {group_name} -> {itmes}")
+
+            
+            while True:
+                try:
+                    column_Name = input('\n please select the column name you want to perform statified sample on \n')
+
+                    get_sum_Aggregation  =  getSumAggregation(studentPerformance, column_Name)
+                    get_sum_Aprox_Aggregation = getAproxAvgAgregation(studentPerformance,itmes,column_Name,.40,get_sum_Aggregation)
+                    
+                    
+                    get_Avg_Aggregation  =  getAvgAggregation(studentPerformance, column_Name)
+                    get_Avg_Aprox_Aggregation = getAproxAvgAgregation(studentPerformance,itmes,column_Name,.40,get_Avg_Aggregation)
+                    
+                    
+                    get_Median_Aggregation  =  getMedianAggregation(studentPerformance, column_Name)
+                    get_Median_Aprox_Aggregation = getAproxMedianAgregation(studentPerformance,itmes,column_Name,.40,get_Median_Aggregation)
+                    metrics = {
+                        "aproximate sum":   get_sum_Aprox_Aggregation,
+                        "exact sum":    get_sum_Aggregation,
+                        "aproximate avg": get_Avg_Aprox_Aggregation,
+                        "aproximate median": get_Median_Aprox_Aggregation,
+                        "exact avg": get_Avg_Aggregation,
+                        "exact median": get_Median_Aggregation
+                    }
+                    experiment_results.append(metrics)
+                    plotAllMetrics(metrics, experiment_number=experiment_number, column_name=column_Name,dataset_name="Students Performance")     
+                    break           
+                    
+                    
+                except Error:
+                        print(f"invalid: {Error}")
 
 main()
