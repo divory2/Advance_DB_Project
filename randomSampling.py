@@ -255,8 +255,7 @@ def confidencInterval(df, sample_size, confidenc_level):
     }
 
 
-def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_name: str):
-    
+def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_name: str, dataset_name: str):    
     # =========================
     # 1. ORGANIZE EXACT VS APPROX
     # =========================
@@ -300,7 +299,7 @@ def plotAllMetrics(aggregation_results: dict, experiment_number: int, column_nam
     # =========================
     # 2. OUTPUT DIRS
     # =========================
-    base_dir = os.path.join("plots", f"experiment_{experiment_number}")
+    base_dir = os.path.join("plots", dataset_name, f"experiment_{experiment_number}")    
     perf_dir = os.path.join(base_dir, "performance")
     acc_dir = os.path.join(base_dir, "accuracy")
     ci_dir = os.path.join(base_dir, "confidence_interval")
@@ -499,53 +498,104 @@ def make_title(agg_label, experiment_number, column_name, plot_type):
 
 # --- Main execution part (as provided in your code) ---
 def main():
-    for i in range(3):
-        
-        superStore =  pd.read_csv("./datasets/1/Superstore.csv", encoding='latin1')
-
-        print(superStore.head())
-        
-        number = np.random.uniform(1,60.0)
-        fraction = randomSampleNumberGenerator(number)
-        
-        while True:
-            try:
-                column_Name = input('\n please select the name of the column you want to perform a random sample on: ')
-
-                # --- Input validation for numeric columns ---
-                if not np.issubdtype(superStore[column_Name].dtype, np.number):
-                    print("❌ Please select a numeric column (e.g., Sales, Profit, Quantity).")
-                    continue # Ask for input again
-
-                get_sum_Aggregation  =  getSumAggregation(superStore, column_Name)
-                get_sum_Aprox_Aggregation = getAproxSumAggregation(superStore,column_Name,fraction,get_sum_Aggregation)
-                
-                get_Avg_Aggregation  =  getAvgAggregation(superStore, column_Name)
-                get_Avg_Aprox_Aggregation = getAproxAvgAggregation(superStore,column_Name,fraction,get_Avg_Aggregation)
-                
-                get_Median_Aggregation  =  getMedianAggregation(superStore, column_Name)
-                get_Median_Aprox_Aggregation = getAproxMedianAggregation(superStore,column_Name,fraction,get_Median_Aggregation)
-                print("🔥 reached before metrics")
-                metrics = {
-                    "exact sum": get_sum_Aggregation,
-                    "aproximate sum": get_sum_Aprox_Aggregation,
-                    "exact avg": get_Avg_Aggregation,
-                    "aproximate avg": get_Avg_Aprox_Aggregation,
-                    "exact median": get_Median_Aggregation,
-                    "aproximate median": get_Median_Aprox_Aggregation,
-                }
-                
-                print(f"here is the metrics******** {metrics} ")
-                for items in metrics.values():
-                    print(f"here are metrics {items}")
-                plotAllMetrics(metrics, experiment_number=i, column_name=column_Name)     
-                break # Exit the while loop if plotting is successful
-                
-            except KeyError:
-                print(f"❌ Invalid column name '{column_Name}'. Please try again.")
-            except Exception as e: # Catch other potential errors
-                print(f"An unexpected error occurred: {e}")
     
+    pd.set_option('display.max_columns', None)   # show all columns
+    pd.set_option('display.max_rows', None)      # (optional) show all rows
+    pd.set_option('display.max_colwidth', None)
+    superStore =  pd.read_csv("./datasets/1/Superstore.csv", encoding='latin1')
+    banckChurners = pd.read_csv("./datasets/1/BankChurners 2.csv", encoding='latin1')
+    
+    
+    number = np.random.uniform(1,60.0)
+    fraction = randomSampleNumberGenerator(number)
+    
+   
+            
+    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurners")
+    if chosen_df == "superStore":
+        for i in range(3):
+            print(superStore.head())
+            while True:
+                try:
+                    column_Name = input('\n please select the name of the column you want to perform a random sample on: ')
+
+                    # --- Input validation for numeric columns ---
+                    if not np.issubdtype(superStore[column_Name].dtype, np.number):
+                        print("❌ Please select a numeric column (e.g., Sales, Profit, Quantity).")
+                        continue # Ask for input again
+
+                    get_sum_Aggregation  =  getSumAggregation(superStore, column_Name)
+                    get_sum_Aprox_Aggregation = getAproxSumAggregation(superStore,column_Name,fraction,get_sum_Aggregation)
+                    
+                    get_Avg_Aggregation  =  getAvgAggregation(superStore, column_Name)
+                    get_Avg_Aprox_Aggregation = getAproxAvgAggregation(superStore,column_Name,fraction,get_Avg_Aggregation)
+                    
+                    get_Median_Aggregation  =  getMedianAggregation(superStore, column_Name)
+                    get_Median_Aprox_Aggregation = getAproxMedianAggregation(superStore,column_Name,fraction,get_Median_Aggregation)
+                    print("🔥 reached before metrics")
+                    metrics = {
+                        "exact sum": get_sum_Aggregation,
+                        "aproximate sum": get_sum_Aprox_Aggregation,
+                        "exact avg": get_Avg_Aggregation,
+                        "aproximate avg": get_Avg_Aprox_Aggregation,
+                        "exact median": get_Median_Aggregation,
+                        "aproximate median": get_Median_Aprox_Aggregation,
+                    }
+                    
+                    print(f"here is the metrics******** {metrics} ")
+                    for items in metrics.values():
+                        print(f"here are metrics {items}")
+                    plotAllMetrics(metrics, experiment_number=i, column_name=column_Name,dataset_name="superStore")     
+                    break # Exit the while loop if plotting is successful
+                except KeyError:
+                    print(f"❌ Invalid column name '{column_Name}'. Please try again.")
+                except Exception as e: # Catch other potential errors
+                    print(f"An unexpected error occurred: {e}")
+
+    elif chosen_df == "banckChurner":
+        print(f"\n\n {banckChurners.head()}")
+        for i in range(3):
+            print(f"\n\n {banckChurners.head()}")
+            while True:
+                try:
+                    column_Name = input('\n please select the name of the column you want to perform a random sample on: ')
+
+                    # --- Input validation for numeric columns ---
+                    if not np.issubdtype(banckChurners[column_Name].dtype, np.number):
+                        print("❌ Please select a numeric column ")
+                        continue # Ask for input again
+
+                    get_sum_Aggregation  =  getSumAggregation(banckChurners, column_Name)
+                    get_sum_Aprox_Aggregation = getAproxSumAggregation(banckChurners,column_Name,fraction,get_sum_Aggregation)
+                    
+                    get_Avg_Aggregation  =  getAvgAggregation(banckChurners, column_Name)
+                    get_Avg_Aprox_Aggregation = getAproxAvgAggregation(banckChurners,column_Name,fraction,get_Avg_Aggregation)
+                    
+                    get_Median_Aggregation  =  getMedianAggregation(banckChurners, column_Name)
+                    get_Median_Aprox_Aggregation = getAproxMedianAggregation(banckChurners,column_Name,fraction,get_Median_Aggregation)
+                    print("🔥 reached before metrics")
+                    metrics = {
+                        "exact sum": get_sum_Aggregation,
+                        "aproximate sum": get_sum_Aprox_Aggregation,
+                        "exact avg": get_Avg_Aggregation,
+                        "aproximate avg": get_Avg_Aprox_Aggregation,
+                        "exact median": get_Median_Aggregation,
+                        "aproximate median": get_Median_Aprox_Aggregation,
+                    }
+                    
+                    print(f"here is the metrics******** {metrics} ")
+                    for items in metrics.values():
+                        print(f"here are metrics {items}")
+                    plotAllMetrics(metrics, experiment_number=i, column_name=column_Name,dataset_name="banckChurners")     
+                    break # Exit the while loop if plotting is successful
+                except KeyError:
+                    print(f"❌ Invalid column name '{column_Name}'. Please try again.")
+                except Exception as e: # Catch other potential errors
+                    print(f"An unexpected error occurred: {e}")
+        
+                    
+
+        
     
         
 
