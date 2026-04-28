@@ -487,7 +487,7 @@ def main():
     pd.set_option('display.max_columns', None)   # show all columns
     pd.set_option('display.max_rows', None)      # (optional) show all rows
     pd.set_option('display.max_colwidth', None)
-    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurners and student Performance \n")
+    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurner and student Performance \n")
     if chosen_df == "superStore":
         
         superStore = pd.read_csv("../datasets/1/Superstore.csv", encoding='latin1')

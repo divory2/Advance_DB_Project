@@ -511,7 +511,7 @@ def main():
     
    
             
-    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurners and students performance \n")
+    chosen_df =  input("please chose the data frame you would like to load options \n superStore    and     banckChurner and student Performance \n")
     if chosen_df == "superStore":
         for i in range(3):
             print(superStore.head())
